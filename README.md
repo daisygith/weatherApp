@@ -44,11 +44,42 @@ Handles parsing raw JSON into structured data.
 
 1. Fetches the latest record from `WEATHER_RAW` for the given city
 2. Parses JSON using Oracle `JSON_VALUE` with JSONPath notation, e.g.:
-
 	- `$.main.temp` → temperature
 	- `$.wind.speed` → wind speed
 	- `$.weather[0].description` → weather description
-
 3. Inserts parsed data into the `WEATHER_PROCESSED` table
 
+## Data Flow
+OpenWeatherMap API
+        │
+        ▼
+APEX_WEB_SERVICE.MAKE_REST_REQUEST
+        │  (raw JSON)
+        ▼
+   WEATHER_RAW
+        │
+        ▼
+   JSON_VALUE (parsing)
+        │
+        ▼
+WEATHER_PROCESSED
+        │
+        ▼
+  Oracle APEX UI
+  
+## Setup
 
+### Requirements
+- Oracle Database with Oracle APEX installed
+- API key from [openweathermap.org](https://openweathermap.org/api) (free tier is sufficient)
+- Database ACL configured to allow outbound HTTP calls
+
+### Running the job
+A `DBMS_SCHEDULER` job runs `PKG_WEATHER.download_date_from_api` every hour for each city defined in the `CITY` table.
+
+### Adding a city
+Simply insert a record into the `CITY` table with the city name and its geographic coordinates 
+(`WIDTH` for latitude, `LENGTH` for longitude) — the job will automatically start fetching data for it.
+
+### Screenshot
+![Weather App Dashboard](img1.png)
