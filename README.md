@@ -55,18 +55,22 @@ OpenWeatherMap API
         │
         ▼
 APEX_WEB_SERVICE.MAKE_REST_REQUEST
+
         │  (raw JSON)
         ▼
 		
    WEATHER_RAW
+   
         │
         ▼
 		
    JSON_VALUE (parsing)
+   
         │
         ▼
 		
 WEATHER_PROCESSED
+
         │
         ▼
 		
