@@ -1,0 +1,16 @@
+BEGIN
+    DBMS_SCHEDULER.CREATE_JOB (
+        job_name        => 'JOB_WEATHER_UPDATE',
+        job_type        => 'PLSQL_BLOCK',
+        job_action      => 'BEGIN
+                              FOR rec IN (SELECT id FROM city WHERE active = ''T'') LOOP
+                                PKG_WEATHER.download_date_from_api(rec.id, ''API_KEY'');
+                                PKG_WEATHER.json_process(rec.id);
+                              END LOOP;
+                            END;',
+        start_date      => SYSTIMESTAMP,
+        repeat_interval => 'FREQ=HOURLY; INTERVAL=1',
+        enabled         => TRUE,
+        comments        => 'Automatyczna aktualizacja pogody co godzinę'
+    );
+END;
