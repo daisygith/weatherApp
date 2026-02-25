@@ -13,17 +13,42 @@ A weather application built in Oracle APEX that fetches weather data from an ext
 |Frontend / UI | Oracle APEX |
 | Backend | PL/SQL (Oracle Database) |
 | Data source | [OpenWeatherMap API](https://openweathermap.org/api) |
-| HTTP calls | APEX_WEB_SERVICE.MAKE_REST_REQUEST |
-| JSON parsing | Oracle JSON_VALUE |
+| HTTP calls | `APEX_WEB_SERVICE.MAKE_REST_REQUEST` |
+| JSON parsing | Oracle `JSON_VALUE` |
 | Scheduling | Oracle DBMS_SCHEDULER (hourly job) |
 
 ## Database Structure
 | Table | Description |
 |---|---|
-| CITY | List of cities with their geographic coordinates |
-| WEATHER_RAW | Raw JSON responses from the API |
-| WEATHER_PROCESSED | Parsed weather data in structured columns |
-| LOG_DOWNLOAD | Download logs — status (SUCCESS/ERROR) and execution time |
+| `CITY` | List of cities with their geographic coordinates |
+| `WEATHER_RAW` | Raw JSON responses from the API |
+| `WEATHER_PROCESSED` | Parsed weather data in structured columns |
+| `LOG_DOWNLOAD` | Download logs — status (SUCCESS/ERROR) and execution time |
 
+## `PKG_WEATHER` Package
+
+All backend logic is encapsulated in the `PKG_WEATHER` PL/SQL package, which contains two procedures:
+`download_date_from_api(p_city_id, p_api_key)`
+
+Handles communication with the OpenWeatherMap API.
+
+1. Fetches city coordinates from the `CITY` table
+2. Calls the REST API using `APEX_WEB_SERVICE.MAKE_REST_REQUEST`
+3. Validates the response
+4. Saves the raw JSON to the `WEATHER_RAW` table
+5. Logs the result (execution time, status) to `LOG_DOWNLOAD`
+6. On error — logs the error message and re-raises the exception
+
+`json_process(p_city_id)`
+Handles parsing raw JSON into structured data.
+
+1. Fetches the latest record from `WEATHER_RAW` for the given city
+2. Parses JSON using Oracle `JSON_VALUE` with JSONPath notation, e.g.:
+
+	- `$.main.temp` → temperature
+	- `$.wind.speed` → wind speed
+	- `$.weather[0].description` → weather description
+
+3. Inserts parsed data into the `WEATHER_PROCESSED` table
 
 
